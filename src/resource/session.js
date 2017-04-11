@@ -4,7 +4,8 @@
 
 module.exports = {
   create:create,
-  destroy: destroy
+  destroy: destroy,
+  loginRequired: loginRequired
 };
 
 var json = require('../../lib/form-json');
@@ -25,7 +26,9 @@ function create(req, res, db){
       }
       var cryptedPassword = encryption.digest(password + user.salt);
       if (cryptedPassword != user.cryptedPassword){
-
+        res.statusCode = 403;
+        res.end("Server error");
+        return;
       }
       else{
         var cookieData = JSON.stringify({userId: user.id});
@@ -37,4 +40,24 @@ function create(req, res, db){
       }
     });
   });
+}
+
+function destroy(req, res){
+  res.setHeader("Set-Cookie", "");
+  res.statusCode = 200;
+  res.end("Logged out Successfully");
+}
+
+function loginRequired(req, res, next){
+  var session = req.heades.cookie.session;
+  var sessionData = encryption.decipher(session);
+  var sessionObj = JSON.parse(sessionData);
+  if(sessionObj.userId){
+    req.currentUserId = sessionObj.userId;
+    return next(req,res);
+  }
+  else {
+    res.statusCode = 403;
+    res.end("Authentication required");
+  }
 }
