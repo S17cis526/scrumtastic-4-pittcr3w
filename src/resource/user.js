@@ -5,7 +5,7 @@ module.exports = {
 }
 
 var json = require('./../lib/form-json');
-var encryption = require('./../lib/encryption');
+var encryption = require('../../lib/encryption');
 
 function create(req, res, db){
   json(req, res, function(req, res){
